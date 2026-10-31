@@ -1,0 +1,13 @@
+# cizon2 build area and caches
+build/
+deps/
+compile_commands.json
+.vscode/c_cpp_properties.json
+
+# CMake scratch builds
+build-*/
+
+# Local session artifacts kept on disk but out of the repository
+CIZON2_TEST_REPORT.txt
+
+# The amalgamated dist/ is generated but committed on purpose (see README).

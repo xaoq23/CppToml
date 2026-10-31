@@ -1,0 +1,19 @@
+[project]
+name = "CppToml"
+version = "0.2.0"
+edition = "c++23"
+compile_commands = true
+
+[compiler]
+flags = ["-Wall", "-Wextra"]
+
+[[target]]
+name = "tomlcore"
+kind = "static_lib"
+sources = ["lib"]
+
+[[target]]
+name = "tomlcli"
+kind = "bin"
+sources = ["src"]
+links = ["tomlcore"]

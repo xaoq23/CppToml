@@ -1,0 +1,27 @@
+# A small sample for print_tree and manual testing.
+#   ./print_tree examples/sample.toml
+
+title = "sample"
+
+[owners]
+single = true
+names  = ["alice", "bob", "carol"]
+
+[db]
+enabled = true
+ports   = [8001, 8001, 8002]
+backup  = 1979-05-27T07:32:00Z
+
+[servers.alpha]
+ip = "10.0.0.1"
+
+[servers.beta]
+ip = "10.0.0.2"
+
+[[products]]
+name = "Hammer"
+sku  = 738594938
+
+[[products]]
+name = "Nail"
+sku  = 284759393
