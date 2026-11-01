@@ -2,7 +2,7 @@
 build/
 deps/
 compile_commands.json
-.vscode/c_cpp_properties.json
+.vscode/
 
 # CMake scratch builds
 build-*/
@@ -11,3 +11,6 @@ build-*/
 CIZON2_TEST_REPORT.txt
 
 # The amalgamated dist/ is generated but committed on purpose (see README).
+
+
+.cache/
