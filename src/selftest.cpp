@@ -68,7 +68,7 @@ struct ok_case {
 
 // Main corpus: a multi-feature document in official-test style.
 const char* MAIN_DOC = R"toml(
-# 注释会被忽略
+# a comment, ignored
 title = "cpp-toml main"
 owner.name = "Tom Preston-Werner"
 owner.dob  = 1979-05-27T07:32:00Z
@@ -266,7 +266,7 @@ std::vector<ok_case> ok_cases() {
                          return is_bool(*pick(t, "b1"), true) && is_bool(*pick(t, "b2"), false);
                      }});
     cases.push_back({"doc/comments-only",
-                     "# 只有注释\n\n   # 缩进注释\n",
+                     "# only comments\n\n   # indented comment\n",
                      [](const cpptoml::table& t) { return t.entries.empty(); }});
     cases.push_back({"doc/crlf",
                      "a = 1\r\nb = 'two'\r\n",
@@ -321,62 +321,62 @@ struct err_case {
 
 std::vector<err_case> err_cases() {
     return {
-        {"dup/key", "k = 1\nk = 2\n", "重复的键"},
-        {"dup/dotted", "a.b = 1\na.b = 2\n", "重复的键"},
-        {"dup/table-header", "[a]\n[a]\n", "重复定义"},
-        {"dup/table-after-dotted", "a.b = 1\n[a]\n", "键值对定义"},
-        {"dup/redefine-inline", "a = {}\n[a]\nx = 1\n", "键值对定义"},
-        {"dup/header-vs-dotted", "[a]\n[a.b]\n\n[a.c]\nx = 1\n\n[c]\n[a.c]\n", "重复定义"},
-        {"num/leading-zero", "x = 01\n", "前导零"},
-        {"num/empty-int", "x = 0x\n", "不是合法的整数"},
-        {"num/bad-underscore", "x = 1__0\n", "下划线"},
-        {"num/trailing-underscore", "x = 1_\n", "下划线"},
-        {"num/int-overflow", "x = 99999999999999999999\n", "64 位"},
-        {"num/float-overflow", "x = 1e999\n", "超出范围"},
-        {"num/bad-float", "x = 1.\n", "不是合法的浮点数"},
-        {"num/orphan-sign", "x = -\n", "不是合法的数字"},
-        {"str/bad-escape", "s = \"\\q\"\n", "非法转义"},
-        {"str/unclosed", "s = \"abc\n", "未闭合"},
-        {"str/unclosed-literal", "s = 'abc\n", "未闭合"},
-        {"str/bad-codepoint", "s = \"\\uD800\"\n", "代理区"},
-        {"str/short-codepoint", "s = \"\\u12\"\n", "十六进制"},
-        {"syn/missing-value", "x = \n", "缺少值"},
+        {"dup/key", "k = 1\nk = 2\n", "duplicate key"},
+        {"dup/dotted", "a.b = 1\na.b = 2\n", "duplicate key"},
+        {"dup/table-header", "[a]\n[a]\n", "duplicate definition"},
+        {"dup/table-after-dotted", "a.b = 1\n[a]\n", "key-value pair"},
+        {"dup/redefine-inline", "a = {}\n[a]\nx = 1\n", "key-value pair"},
+        {"dup/header-vs-dotted", "[a]\n[a.b]\n\n[a.c]\nx = 1\n\n[c]\n[a.c]\n", "duplicate definition"},
+        {"num/leading-zero", "x = 01\n", "leading zero"},
+        {"num/empty-int", "x = 0x\n", "not a valid integer"},
+        {"num/bad-underscore", "x = 1__0\n", "underscore"},
+        {"num/trailing-underscore", "x = 1_\n", "underscore"},
+        {"num/int-overflow", "x = 99999999999999999999\n", "64-bit"},
+        {"num/float-overflow", "x = 1e999\n", "out of range"},
+        {"num/bad-float", "x = 1.\n", "not a valid float"},
+        {"num/orphan-sign", "x = -\n", "not a valid number"},
+        {"str/bad-escape", "s = \"\\q\"\n", "invalid escape"},
+        {"str/unclosed", "s = \"abc\n", "unterminated"},
+        {"str/unclosed-literal", "s = 'abc\n", "unterminated"},
+        {"str/bad-codepoint", "s = \"\\uD800\"\n", "surrogate"},
+        {"str/short-codepoint", "s = \"\\u12\"\n", "hexadecimal"},
+        {"syn/missing-value", "x = \n", "missing value"},
         {"syn/missing-eq", "x 1\n", "'='"},
-        {"syn/trailing-garbage", "x = 1 y = 2\n", "多余内容"},
-        {"syn/bare-nonascii-key", "å = 1\n", "键名"},
-        {"inline/trailing-comma", "t = { x = 1, }\n", "尾逗号"},
-        {"inline/multiline", "t = {\n  x = 1\n}\n", "一行内"},
-        {"inline/missing-brace", "t = { x = 1\n", "一行内"},
-        {"array/unclosed", "x = [1, 2,\n", "未闭合"},
-        {"array/missing-comma", "x = [1 2]\n", "',' 或 ']'"},
-        {"header/unclosed", "[a\n", "表头需要"},
-        {"header/double-close", "[a]]\n", "多余内容"},
-        {"header/empty-part", "[a..b]\n", "键名"},
-        {"aot/conflict", "[a]\n[[a]]\n", "数组表"},
-        {"num/plus-radix", "x = +0xff\n", "进制整数"},
-        {"num/minus-radix", "x = -0b1\n", "进制整数"},
-        {"num/us-in-radix", "x = 0x_1\n", "下划线"},
-        {"num/zero-underscore", "x = 0_1\n", "前导零"},
-        {"num/float-leading-zero", "x = 01.5\n", "前导零"},
-        {"str/bad-unicode-range", "s = \"\\UFFFFFFFF\"\n", "超出 Unicode"},
-        {"str/us-surrogate", "s = \"\\U0000D800\"\n", "代理区"},
-        {"dotted/through-value", "a = 1\na.b = 2\n", "不能穿过"},
-        {"dotted/through-implicit-header", "[a.b.c]\nz = 9\n[a]\nb.c.t = 1\n", "不能穿过"},
-        {"head/value-under-header", "a = 1\n[a.b]\n", "不能穿过"},
-        {"aot/after-implicit", "[[a.b]]\n[[a]]\n", "数组表"},
-        {"dt/bad-offset", "d = 1979-05-27T07:32:00+7\n", "两位数字"},
-        {"dt/local-with-offset", "d = 07:32:00Z\n", "本地时间"},
+        {"syn/trailing-garbage", "x = 1 y = 2\n", "unexpected content"},
+        {"syn/bare-nonascii-key", "å = 1\n", "key name"},
+        {"inline/trailing-comma", "t = { x = 1, }\n", "trailing comma"},
+        {"inline/multiline", "t = {\n  x = 1\n}\n", "a single line"},
+        {"inline/missing-brace", "t = { x = 1\n", "a single line"},
+        {"array/unclosed", "x = [1, 2,\n", "unterminated"},
+        {"array/missing-comma", "x = [1 2]\n", "',' or ']'"},
+        {"header/unclosed", "[a\n", "header requires"},
+        {"header/double-close", "[a]]\n", "unexpected content"},
+        {"header/empty-part", "[a..b]\n", "key name"},
+        {"aot/conflict", "[a]\n[[a]]\n", "array of tables"},
+        {"num/plus-radix", "x = +0xff\n", "radix integer"},
+        {"num/minus-radix", "x = -0b1\n", "radix integer"},
+        {"num/us-in-radix", "x = 0x_1\n", "underscore"},
+        {"num/zero-underscore", "x = 0_1\n", "leading zero"},
+        {"num/float-leading-zero", "x = 01.5\n", "leading zero"},
+        {"str/bad-unicode-range", "s = \"\\UFFFFFFFF\"\n", "the Unicode range"},
+        {"str/us-surrogate", "s = \"\\U0000D800\"\n", "surrogate"},
+        {"dotted/through-value", "a = 1\na.b = 2\n", "pass through"},
+        {"dotted/through-implicit-header", "[a.b.c]\nz = 9\n[a]\nb.c.t = 1\n", "pass through"},
+        {"head/value-under-header", "a = 1\n[a.b]\n", "pass through"},
+        {"aot/after-implicit", "[[a.b]]\n[[a]]\n", "array of tables"},
+        {"dt/bad-offset", "d = 1979-05-27T07:32:00+7\n", "two digits"},
+        {"dt/local-with-offset", "d = 07:32:00Z\n", "local time"},
     };
 }
 
 int report(const ok_case& c, const parse_result& r) {
     if (!r) {
-        std::cout << "FAIL " << c.name << "（应解析成功）: " << r.error().line << ':'
+        std::cout << "FAIL " << c.name << " (expected a successful parse): " << r.error().line << ':'
                   << r.error().column << ' ' << r.error().message << '\n';
         return 1;
     }
     if (!c.verify(*r)) {
-        std::cout << "FAIL " << c.name << "（字段验证失败）\n";
+        std::cout << "FAIL " << c.name << " (field verification failed)\n";
         return 1;
     }
     return 0;
@@ -384,12 +384,12 @@ int report(const ok_case& c, const parse_result& r) {
 
 int report(const err_case& c, const parse_result& r) {
     if (r) {
-        std::cout << "FAIL " << c.name << "（应报错但成功）\n";
+        std::cout << "FAIL " << c.name << " (expected an error, but it parsed)\n";
         return 1;
     }
     if (r.error().message.find(c.err_contains) == std::string::npos) {
-        std::cout << "FAIL " << c.name << "（报错不含“" << c.err_contains
-                  << "”）: " << r.error().message << '\n';
+        std::cout << "FAIL " << c.name << " (error message does not contain \"" << c.err_contains
+                  << "\"): " << r.error().message << '\n';
         return 1;
     }
     return 0;
@@ -505,10 +505,10 @@ int selftest_main() {
     };
     api_checks(expect);
     if (failed == 0) {
-        std::cout << "selftest: " << passed << '/' << total << " 通过\n";
+        std::cout << "selftest: " << passed << '/' << total << " passed\n";
         return 0;
     }
-    std::cout << "selftest: " << passed << '/' << total << " 通过，"
-              << failed << " 失败\n";
+    std::cout << "selftest: " << passed << '/' << total << " passed, "
+              << failed << " failed\n";
     return 1;
 }

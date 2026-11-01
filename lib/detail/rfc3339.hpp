@@ -75,17 +75,17 @@ inline bool take2(scanner& s, int& out) {
 inline pieces take_time(scanner& s) {
     pieces p;
     int hour = 0, minute = 0, second = 0;
-    if (!take2(s, hour)) return {false, "小时须为两位数字"};
-    if (s.peek() != ':') return {false, "小时后缺少 ':'"};
+    if (!take2(s, hour)) return {false, "hour must be two digits"};
+    if (s.peek() != ':') return {false, "':' missing after the hour"};
     s.bump();
-    if (!take2(s, minute)) return {false, "分钟须为两位数字"};
-    if (minute > 59) return {false, "分钟超出 00-59 范围"};
-    if (s.peek() != ':') return {false, "分钟后缺少 ':'（秒不能省略）"};
+    if (!take2(s, minute)) return {false, "minute must be two digits"};
+    if (minute > 59) return {false, "minute out of the 00-59 range"};
+    if (s.peek() != ':') return {false, "':' missing after the minute (seconds are not optional)"};
     s.bump();
-    if (!take2(s, second)) return {false, "秒须为两位数字"};
-    if (hour > 23) return {false, "小时超出 00-23 范围"};
-    if (second > 60) return {false, "秒超出 00-60 范围（含闰秒）"};
-    // Optional fraction: '.' must be followed by >= 1 digit (time-secfrac)
+    if (!take2(s, second)) return {false, "second must be two digits"};
+    if (hour > 23) return {false, "hour out of the 00-23 range"};
+    if (second > 60) return {false, "second out of the 00-60 range (leap second allowed)"};
+    // Optional fraction: '.' must be followed by >= 1 digit (time-secfloat)
     if (s.peek() == '.') {
         s.bump();
         std::size_t frac = 0;
@@ -93,7 +93,7 @@ inline pieces take_time(scanner& s) {
             s.bump();
             ++frac;
         }
-        if (frac == 0) return {false, "小数点后必须有数字"};
+        if (frac == 0) return {false, "a digit is required after the decimal point"};
     }
     p.ok = true;
     return p;
@@ -107,22 +107,22 @@ inline pieces take_offset(scanner& s) {
         p.ok = true;
         return p;
     }
-    if (s.peek() != '+' && s.peek() != '-') return {false, "时间后存在无关内容"};
+    if (s.peek() != '+' && s.peek() != '-') return {false, "unexpected content after the time"};
     s.bump();
     int oh = 0, om = 0;
-    if (!take2(s, oh)) return {false, "偏移小时须为两位数字"};
-    if (s.peek() != ':') return {false, "偏移小时后缺少 ':'"};
+    if (!take2(s, oh)) return {false, "the offset hour must be two digits"};
+    if (s.peek() != ':') return {false, "':' missing after the offset hour"};
     s.bump();
-    if (!take2(s, om)) return {false, "偏移分钟须为两位数字"};
-    if (oh > 24) return {false, "偏移小时超出 00-24 范围"};
-    if (om > 59) return {false, "偏移分钟超出 00-59 范围"};
+    if (!take2(s, om)) return {false, "the offset minute must be two digits"};
+    if (oh > 24) return {false, "the offset hour is out of the 00-24 range"};
+    if (om > 59) return {false, "the offset minute is out of the 00-59 range"};
     p.ok = true;
     return p;
 }
 
 }  // namespace
 
-/// 扫描一个日期时间词。调用前必须先 looks_like_datetime 命中。
+/// Scan one datetime token; looks_like_datetime must have hit before calling.
 inline scan_out scan(scanner& s) {
     scan_out out;
     const std::size_t begin = s.pos;
@@ -141,7 +141,7 @@ inline scan_out scan(scanner& s) {
         digit_at(0) && digit_at(1) && s.peek_at(2) == ':') {
         if (const pieces p = take_time(s); !p.ok) return fail_at(p.reason);
         if (const char z = s.peek(); z == 'Z' || z == 'z' || z == '+' || z == '-') {
-            return fail_at("本地时间不能带时区偏移");
+            return fail_at("a local time cannot carry a timezone offset");
         }
         out.ok = true;
         out.raw = s.src.substr(begin, s.pos - begin);
@@ -152,20 +152,20 @@ inline scan_out scan(scanner& s) {
     int year = 0, month = 0, day = 0;
     for (int i = 0; i < 4; ++i) {
         const char c = s.peek();
-        if (c < '0' || c > '9') return fail_at("年份不是 4 位数字");
+        if (c < '0' || c > '9') return fail_at("the year is not 4 digits");
         year = year * 10 + (c - '0');
         s.bump();
     }
-    if (s.peek() != '-') return fail_at("年份后缺少 '-'");
+    if (s.peek() != '-') return fail_at("'-' missing after the year");
     s.bump();
-    if (!take2(s, month)) return fail_at("月份须为两位数字");
-    if (month == 0) return fail_at("月份不能用 00");
-    if (month > 12) return fail_at("月份超出 01-12 范围");
-    if (s.peek() != '-') return fail_at("月份后缺少 '-'");
+    if (!take2(s, month)) return fail_at("the month must be two digits");
+    if (month == 0) return fail_at("the month cannot be 00");
+    if (month > 12) return fail_at("the month is out of the 01-12 range");
+    if (s.peek() != '-') return fail_at("'-' missing after the month");
     s.bump();
-    if (!take2(s, day)) return fail_at("日期须为两位数字");
-    if (day == 0) return fail_at("日期不能用 00");
-    if (day > days_in_month(year, month)) return fail_at("日期超出当月最大天数（含闰年规则）");
+    if (!take2(s, day)) return fail_at("the day must be two digits");
+    if (day == 0) return fail_at("the day cannot be 00");
+    if (day > days_in_month(year, month)) return fail_at("the day exceeds the month's maximum day count (leap-year rules included)");
 
     // After the date: a local date stops here, or continue as a full datetime
     const char sep = s.peek();

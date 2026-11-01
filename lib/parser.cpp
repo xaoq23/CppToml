@@ -65,13 +65,13 @@ struct node_state {
 
 const char* kind_word(node_kind k) {
     switch (k) {
-        case node_kind::implicit_header: return "隐式表";
-        case node_kind::implicit_kv: return "键值对定义的表";
-        case node_kind::header: return "表";
-        case node_kind::aot: return "数组表";
-        case node_kind::value: return "键值对定义的值";
+        case node_kind::implicit_header: return "an implicit table";
+        case node_kind::implicit_kv: return "a table created by key-value pairs";
+        case node_kind::header: return "a table";
+        case node_kind::aot: return "an array of tables";
+        case node_kind::value: return "a key-value pair";
     }
-    return "节点";
+    return "a node";
 }
 
 std::string pretty(std::string_view sid) {
@@ -98,7 +98,7 @@ struct builder {
     static const std::shared_ptr<table>& as_table(const value& v, scanner& s, std::string_view where) {
         const auto p = std::get_if<std::shared_ptr<table>>(&v);
         if (p == nullptr) {
-            detail::fail(s, "内部错误：值树节点不是表（" + std::string(where) + "）");
+            detail::fail(s, "internal error: value tree node is not a table (" + std::string(where) + ")");
         }
         return *p;
     }
@@ -150,7 +150,7 @@ walk_out walk_intermediate(arena_ref a, const std::vector<std::string>& parts, b
         }
         if (ns.kind == node_kind::aot && header_walk) {
             const auto& arr = std::get<std::shared_ptr<array>>(cur->entries[p]);
-            if (arr->items.empty()) detail::fail(s, "内部错误：空数组表");
+            if (arr->items.empty()) detail::fail(s, "internal error: empty array of tables");
             cur = std::get<std::shared_ptr<table>>(arr->items.back());
             sid = node_sid + "@" + std::to_string(arr->items.size() - 1);
             continue;
@@ -168,8 +168,8 @@ walk_out walk_intermediate(arena_ref a, const std::vector<std::string>& parts, b
             sid = node_sid;
             continue;
         }
-        detail::fail(s, "«" + pretty(node_sid) + "» 已定义为" + kind_word(ns.kind) +
-                        "，键或表头不能穿过");
+        detail::fail(s, "«" + pretty(node_sid) + "» is already defined as " + kind_word(ns.kind) +
+                        "; keys or table headers cannot pass through it");
     }
     return {cur, sid};
 }
@@ -180,7 +180,7 @@ void assign_leaf(arena_ref a, const std::vector<std::string>& parts, const value
     const walk_out w = walk_intermediate(a, parts, false, s);
     const std::string end_sid = join(w.sid, parts.back());
     if (a.states.count(end_sid)) {
-        detail::fail(s, "重复的键 «" + pretty(end_sid) + "»");
+        detail::fail(s, "duplicate key «" + pretty(end_sid) + "»");
     }
     a.states[end_sid] = {node_kind::value, 0};
     w.parent->entries[parts.back()] = v;
@@ -195,8 +195,8 @@ std::string parse_key_part(scanner& s) {
     if (s.peek() == '\'') return strnum::scan_literal_string(s);
     if (!charset::is_bare_key_char(s.peek())) {
         const char c = s.peek();
-        detail::fail(s, std::string("键名缺少或包含非法字符：") +
-                        (c ? std::string("'") + c + "'" : "非 ASCII 字节"));
+        detail::fail(s, std::string("key name missing or contains an illegal character: ") +
+                        (c ? std::string("'") + c + "'" : "non-ASCII byte"));
     }
     std::string p;
     while (charset::is_bare_key_char(s.peek())) {
@@ -225,21 +225,21 @@ value parse_array(scanner& s) {
     auto arr = std::make_shared<array>();
     for (;;) {
         detail::skip_ws_comments_lines(s);
-        if (s.eof()) detail::fail(s, "数组未闭合（没有收 ']'）");
+        if (s.eof()) detail::fail(s, "unterminated array (missing ']')");
         if (s.peek() == ']') { s.bump(); return arr; }
         arr->items.push_back(parse_value_expr(s));
         detail::skip_ws_comments_lines(s);
-        if (s.eof()) detail::fail(s, "数组未闭合（没有收 ']'）");
+        if (s.eof()) detail::fail(s, "unterminated array (missing ']')");
         if (s.peek() == ',') { s.bump(); continue; }
         if (s.peek() == ']') { s.bump(); return arr; }
-        detail::fail(s, "数组里预期 ',' 或 ']'");
+        detail::fail(s, "expected ',' or ']' inside the array");
     }
 }
 
 // ---- Value dispatch -------------------------------------------------------------
 
 value parse_value_expr(scanner& s) {
-    if (s.eof() || s.at_newline() || s.peek() == '#') detail::fail(s, "缺少值");
+    if (s.eof() || s.at_newline() || s.peek() == '#') detail::fail(s, "missing value");
     const char c = s.peek();
     switch (c) {
         case '"':
@@ -271,7 +271,7 @@ value parse_value_expr(scanner& s) {
     if (charset::is_digit(c) || c == 'i' || c == 'n') {
         return strnum::scan_number(s);
     }
-    detail::fail(s, std::string("无法识别的值：'") + c + "'");
+    detail::fail(s, std::string("unrecognized value: '") + c + "'");
 }
 
 // ---- Inline tables ---------------------------------------------------------------
@@ -283,30 +283,30 @@ value parse_inline(scanner& s) {
     arena_ref a{local_states, root, ""};  // local arena: self-contained inside the inline table
 
     s.skip_spaces();
-    if (s.eof() || s.at_newline()) detail::fail(s, "内联表必须在一行内");
+    if (s.eof() || s.at_newline()) detail::fail(s, "inline tables must stay on a single line");
     if (s.peek() == '}') { s.bump(); return root; }
     for (;;) {
         s.skip_spaces();
-        if (s.eof() || s.at_newline()) detail::fail(s, "内联表必须在一行内");
+        if (s.eof() || s.at_newline()) detail::fail(s, "inline tables must stay on a single line");
         const std::vector<std::string> parts = parse_key(s);
         s.skip_spaces();
-        if (s.peek() != '=') detail::fail(s, "内联表里键后需要 '='");
+        if (s.peek() != '=') detail::fail(s, "'=' required after a key inside an inline table");
         s.bump();
         s.skip_spaces();
-        if (s.eof() || s.at_newline()) detail::fail(s, "缺少值");
+        if (s.eof() || s.at_newline()) detail::fail(s, "missing value");
         const value v = parse_value_expr(s);
         assign_leaf(a, parts, v, s);
         s.skip_spaces();
         if (s.peek() == ',') {
             s.bump();
             s.skip_spaces();
-            if (s.eof() || s.at_newline()) detail::fail(s, "内联表必须在一行内");
-            if (s.peek() == '}') detail::fail(s, "内联表不允许尾逗号");
+            if (s.eof() || s.at_newline()) detail::fail(s, "inline tables must stay on a single line");
+            if (s.peek() == '}') detail::fail(s, "inline tables do not allow a trailing comma");
             continue;
         }
         if (s.peek() == '}') { s.bump(); return root; }
-        if (s.eof() || s.at_newline()) detail::fail(s, "内联表必须在一行内");
-        detail::fail(s, "内联表里预期 ',' 或 '}'");
+        if (s.eof() || s.at_newline()) detail::fail(s, "inline tables must stay on a single line");
+        detail::fail(s, "expected ',' or '}' inside the inline table");
     }
 }
 
@@ -321,7 +321,7 @@ void expect_line_end(scanner& s) {
         detail::skip_comment(s);
         return;  // the document loop handles the newline/EOF after the comment
     }
-    detail::fail(s, "多余内容（行尾只允许空白或注释）");
+    detail::fail(s, "unexpected content (only whitespace or a comment may follow on the line)");
 }
 
 struct section {
@@ -349,14 +349,14 @@ section apply_header(builder& b, const std::vector<std::string>& parts, bool aot
                 return {builder::as_table(w.parent->entries[parts.back()], s, "header-upgrade"),
                         end_sid};
             case node_kind::header:
-                detail::fail(s, "表 «" + pretty(end_sid) + "» 重复定义");
+                detail::fail(s, "duplicate definition of table «" + pretty(end_sid) + "»");
             case node_kind::implicit_kv:
             case node_kind::value:
-                detail::fail(s, "«" + pretty(end_sid) + "» 已被键值对定义，不能再写成表头");
+                detail::fail(s, "«" + pretty(end_sid) + "» is already defined by a key-value pair; it cannot be reopened as a table header");
             case node_kind::aot:
-                detail::fail(s, "«" + pretty(end_sid) + "» 是数组表，不能用表头定义");
+                detail::fail(s, "«" + pretty(end_sid) + "» is an array of tables; it cannot be redefined by a table header");
         }
-        detail::fail(s, "内部错误：未知节点类别");
+        detail::fail(s, "internal error: unknown node kind");
     }
 
     if (st == b.states.end()) {
@@ -373,8 +373,8 @@ section apply_header(builder& b, const std::vector<std::string>& parts, bool aot
         const std::string sid = end_sid + "@" + std::to_string(arr->items.size() - 1);
         return {std::get<std::shared_ptr<table>>(arr->items.back()), sid};
     }
-    detail::fail(s, "«" + pretty(end_sid) + "» 已是" + std::string(kind_word(st->second.kind)) +
-                        "，不能重定义成数组表");
+    detail::fail(s, "«" + pretty(end_sid) + "» is already " + std::string(kind_word(st->second.kind)) +
+                        "; it cannot be redefined as an array of tables");
 }
 
 /// '[' / '[[' headers: parses the key path, the closing brackets, checks
@@ -389,10 +389,10 @@ section parse_header(scanner& s, builder& b) {
     const std::vector<std::string> parts = parse_key(s);
     s.skip_spaces();
     if (aot_form) {
-        if (s.peek() != ']' || s.peek_at(1) != ']') detail::fail(s, "表头需要 ']]'");
+        if (s.peek() != ']' || s.peek_at(1) != ']') detail::fail(s, "table header requires ']]'");
         s.bump_n(2);
     } else {
-        if (s.peek() != ']') detail::fail(s, "表头需要 ']'");
+        if (s.peek() != ']') detail::fail(s, "table header requires ']'");
         s.bump();
     }
     expect_line_end(s);
@@ -408,7 +408,7 @@ std::expected<table, parse_error> parse(std::string_view source) {
         if (const utf8::check_result r = utf8::check(text); !r.ok) {
             const auto [line, col] = detail::line_col_of(text, r.bad);
             return std::unexpected(parse_error{
-                line, col, std::string("非法的 UTF-8 序列或控制字符（UTF-8 非法）")});
+                line, col, std::string("invalid UTF-8 sequence or control character")});
         }
         builder b;
         scanner s{text};
@@ -430,7 +430,7 @@ std::expected<table, parse_error> parse(std::string_view source) {
             }
             const std::vector<std::string> parts = parse_key(s);
             s.skip_spaces();
-            if (s.peek() != '=') detail::fail(s, "键后需要 '='");
+            if (s.peek() != '=') detail::fail(s, "a key must be followed by '='");
             s.bump();
             s.skip_spaces();
             const value v = parse_value_expr(s);
@@ -448,7 +448,7 @@ std::expected<table, parse_error> parse(std::string_view source) {
 std::expected<table, parse_error> parse_file(const std::string_view path) {
     std::ifstream in{std::string(path), std::ios::binary};
     if (!in) {
-        return std::unexpected(parse_error{0, 0, "打不开文件: " + std::string(path)});
+        return std::unexpected(parse_error{0, 0, "cannot open file: " + std::string(path)});
     }
     std::ostringstream buf;
     buf << in.rdbuf();

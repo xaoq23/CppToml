@@ -406,17 +406,17 @@ inline bool take2(scanner& s, int& out) {
 inline pieces take_time(scanner& s) {
     pieces p;
     int hour = 0, minute = 0, second = 0;
-    if (!take2(s, hour)) return {false, "小时须为两位数字"};
-    if (s.peek() != ':') return {false, "小时后缺少 ':'"};
+    if (!take2(s, hour)) return {false, "hour must be two digits"};
+    if (s.peek() != ':') return {false, "':' missing after the hour"};
     s.bump();
-    if (!take2(s, minute)) return {false, "分钟须为两位数字"};
-    if (minute > 59) return {false, "分钟超出 00-59 范围"};
-    if (s.peek() != ':') return {false, "分钟后缺少 ':'（秒不能省略）"};
+    if (!take2(s, minute)) return {false, "minute must be two digits"};
+    if (minute > 59) return {false, "minute out of the 00-59 range"};
+    if (s.peek() != ':') return {false, "':' missing after the minute (seconds are not optional)"};
     s.bump();
-    if (!take2(s, second)) return {false, "秒须为两位数字"};
-    if (hour > 23) return {false, "小时超出 00-23 范围"};
-    if (second > 60) return {false, "秒超出 00-60 范围（含闰秒）"};
-    // Optional fraction: '.' must be followed by >= 1 digit (time-secfrac)
+    if (!take2(s, second)) return {false, "second must be two digits"};
+    if (hour > 23) return {false, "hour out of the 00-23 range"};
+    if (second > 60) return {false, "second out of the 00-60 range (leap second allowed)"};
+    // Optional fraction: '.' must be followed by >= 1 digit (time-secfloat)
     if (s.peek() == '.') {
         s.bump();
         std::size_t frac = 0;
@@ -424,7 +424,7 @@ inline pieces take_time(scanner& s) {
             s.bump();
             ++frac;
         }
-        if (frac == 0) return {false, "小数点后必须有数字"};
+        if (frac == 0) return {false, "a digit is required after the decimal point"};
     }
     p.ok = true;
     return p;
@@ -438,22 +438,22 @@ inline pieces take_offset(scanner& s) {
         p.ok = true;
         return p;
     }
-    if (s.peek() != '+' && s.peek() != '-') return {false, "时间后存在无关内容"};
+    if (s.peek() != '+' && s.peek() != '-') return {false, "unexpected content after the time"};
     s.bump();
     int oh = 0, om = 0;
-    if (!take2(s, oh)) return {false, "偏移小时须为两位数字"};
-    if (s.peek() != ':') return {false, "偏移小时后缺少 ':'"};
+    if (!take2(s, oh)) return {false, "the offset hour must be two digits"};
+    if (s.peek() != ':') return {false, "':' missing after the offset hour"};
     s.bump();
-    if (!take2(s, om)) return {false, "偏移分钟须为两位数字"};
-    if (oh > 24) return {false, "偏移小时超出 00-24 范围"};
-    if (om > 59) return {false, "偏移分钟超出 00-59 范围"};
+    if (!take2(s, om)) return {false, "the offset minute must be two digits"};
+    if (oh > 24) return {false, "the offset hour is out of the 00-24 range"};
+    if (om > 59) return {false, "the offset minute is out of the 00-59 range"};
     p.ok = true;
     return p;
 }
 
 }  // namespace
 
-/// 扫描一个日期时间词。调用前必须先 looks_like_datetime 命中。
+/// Scan one datetime token; looks_like_datetime must have hit before calling.
 inline scan_out scan(scanner& s) {
     scan_out out;
     const std::size_t begin = s.pos;
@@ -472,7 +472,7 @@ inline scan_out scan(scanner& s) {
         digit_at(0) && digit_at(1) && s.peek_at(2) == ':') {
         if (const pieces p = take_time(s); !p.ok) return fail_at(p.reason);
         if (const char z = s.peek(); z == 'Z' || z == 'z' || z == '+' || z == '-') {
-            return fail_at("本地时间不能带时区偏移");
+            return fail_at("a local time cannot carry a timezone offset");
         }
         out.ok = true;
         out.raw = s.src.substr(begin, s.pos - begin);
@@ -483,20 +483,20 @@ inline scan_out scan(scanner& s) {
     int year = 0, month = 0, day = 0;
     for (int i = 0; i < 4; ++i) {
         const char c = s.peek();
-        if (c < '0' || c > '9') return fail_at("年份不是 4 位数字");
+        if (c < '0' || c > '9') return fail_at("the year is not 4 digits");
         year = year * 10 + (c - '0');
         s.bump();
     }
-    if (s.peek() != '-') return fail_at("年份后缺少 '-'");
+    if (s.peek() != '-') return fail_at("'-' missing after the year");
     s.bump();
-    if (!take2(s, month)) return fail_at("月份须为两位数字");
-    if (month == 0) return fail_at("月份不能用 00");
-    if (month > 12) return fail_at("月份超出 01-12 范围");
-    if (s.peek() != '-') return fail_at("月份后缺少 '-'");
+    if (!take2(s, month)) return fail_at("the month must be two digits");
+    if (month == 0) return fail_at("the month cannot be 00");
+    if (month > 12) return fail_at("the month is out of the 01-12 range");
+    if (s.peek() != '-') return fail_at("'-' missing after the month");
     s.bump();
-    if (!take2(s, day)) return fail_at("日期须为两位数字");
-    if (day == 0) return fail_at("日期不能用 00");
-    if (day > days_in_month(year, month)) return fail_at("日期超出当月最大天数（含闰年规则）");
+    if (!take2(s, day)) return fail_at("the day must be two digits");
+    if (day == 0) return fail_at("the day cannot be 00");
+    if (day > days_in_month(year, month)) return fail_at("the day exceeds the month's maximum day count (leap-year rules included)");
 
     // After the date: a local date stops here, or continue as a full datetime
     const char sep = s.peek();
@@ -563,16 +563,16 @@ inline std::uint32_t take_hex_escape(scanner& s, int n) {
     std::uint32_t cp = 0;
     for (int i = 0; i < n; ++i) {
         if (s.eof() || !charset::is_hex_digit(s.peek())) {
-            fail(s, "\\u 转义需要 " + std::to_string(n) + " 位十六进制数字");
+            fail(s, "the \\u escape requires " + std::to_string(n) + " hexadecimal digits");
         }
         cp = cp * 16 + static_cast<std::uint32_t>(charset::hex_value(s.peek()));
         s.bump();
     }
     if (cp >= 0xD800 && cp <= 0xDFFF) {
-        fail(s, "\\u 转义码点是代理区字符（非法）");
+        fail(s, "the \\u escape code point is a surrogate (not allowed)");
     }
     if (cp > 0x10FFFF) {
-        fail(s, "十六进制转义码点超出 Unicode 范围");
+        fail(s, "hexadecimal escape code point beyond the Unicode range");
     }
     return cp;
 }
@@ -583,7 +583,7 @@ inline std::uint32_t take_hex_escape(scanner& s, int n) {
 /// rests on the backslash.
 inline std::string take_escape(scanner& s) {
     s.bump();  // backslash
-    if (s.eof()) fail(s, "字符串未闭合（转义在文件末尾）");
+    if (s.eof()) fail(s, "unterminated string (the escape runs to end of file)");
     const char c = s.peek();
     switch (c) {
         case 'b': s.bump(); return std::string(1, '\b');
@@ -596,7 +596,7 @@ inline std::string take_escape(scanner& s) {
         case 'u': s.bump(); break;
         case 'U': s.bump(); break;
         default:
-            fail(s, std::string("非法转义 '\\") + c + "'");
+            fail(s, std::string("invalid escape '\\") + c + "'");
     }
     const int n = (c == 'u') ? 4 : 8;
     const std::uint32_t cp = take_hex_escape(s, n);
@@ -613,7 +613,7 @@ inline std::string scan_basic_string(scanner& s) {
     s.bump();  // opening quote
     std::string out;
     for (;;) {
-        if (s.eof() || s.peek() == '\n') fail(s, "字符串未闭合（直到行尾没有收引号）");
+        if (s.eof() || s.peek() == '\n') fail(s, "unterminated string (no closing quote before end of line)");
         if (s.peek() == '"') { s.bump(); return out; }
         if (s.peek() == '\\') {
             out += take_escape(s);
@@ -630,7 +630,7 @@ inline std::string scan_literal_string(scanner& s) {
     s.bump();  // opening quote
     std::string out;
     for (;;) {
-        if (s.eof() || s.peek() == '\n') fail(s, "字符串未闭合（直到行尾没有收引号）");
+        if (s.eof() || s.peek() == '\n') fail(s, "unterminated string (no closing quote before end of line)");
         if (s.peek() == '\'') { s.bump(); return out; }
         out.push_back(s.peek());
         s.bump();
@@ -650,7 +650,7 @@ inline std::string scan_multiline_string(scanner& s, bool basic) {
     if (s.at_newline()) s.bump_newline();
 
     for (;;) {
-        if (s.eof()) fail(s, "字符串未闭合（多行串未找到收三连引号）");
+        if (s.eof()) fail(s, "unterminated string (the multiline string never finds its closing triple quote)");
         const char c = s.peek();
 
         // Closing-quote run: k-3 go into the content + 3 close the string;
@@ -658,7 +658,7 @@ inline std::string scan_multiline_string(scanner& s, bool basic) {
         if (c == q) {
             const std::size_t k = s.run_length(q);
             if (k >= 3) {
-                if (k > 5) fail(s, "字符串里收引号连串过长（最多 5 个）");
+                if (k > 5) fail(s, "a closing-quote run longer than 5 inside the string");
                 s.bump_n(k - 3);
                 s.bump_n(3);
                 return out;
@@ -701,7 +701,7 @@ inline std::string scan_multiline_string(scanner& s, bool basic) {
 inline bool scan_bool(scanner& s) {
     const std::string_view word = (s.peek() == 't') ? "true" : "false";
     for (const char w : word) {
-        if (s.eof() || s.peek() != w) fail(s, "无法识别的值（true/false 需小写）");
+        if (s.eof() || s.peek() != w) fail(s, "unrecognized value (true/false must be lowercase)");
         s.bump();
     }
     return word == "true";
@@ -717,7 +717,7 @@ inline cpptoml::datetime scan_datetime(scanner& s) {
     const rfc::scan_out r = rfc::scan(s);
     if (!r.ok) {
         fail_at(begin_line, begin_col,
-                std::string("不是合法的日期时间：") + r.reason);
+                std::string("invalid datetime: ") + r.reason);
     }
     return cpptoml::datetime{r.raw};
 }
@@ -729,13 +729,13 @@ inline cpptoml::datetime scan_datetime(scanner& s) {
 namespace {
 
 [[noreturn]] void not_float(scanner& s, const char* reason) {
-    fail(s, std::string("不是合法的浮点数：") + reason);
+    fail(s, std::string("not a valid float: ") + reason);
 }
 
 /// Inside a number, both sides of an underscore must be digits of the
 /// current class (the cursor sits on the underscore right now).
 inline void check_underscore_neighbors(const scanner& s, char prev, char next, bool (*ok)(char)) {
-    if (!ok(prev) || !ok(next)) fail(s, "下划线必须紧邻数字两侧");
+    if (!ok(prev) || !ok(next)) fail(s, "an underscore must sit between digits on both sides");
 }
 
 bool dec_ok(char c) { return c >= '0' && c <= '9'; }
@@ -763,7 +763,7 @@ inline cpptoml::value scan_number(scanner& s) {
         std::string_view word = (s.peek() == 'i') ? "inf" : "nan";
         for (const char w : word) {
             if (s.eof() || s.peek() != w) {
-                fail_at(begin_line, begin_col, "不是合法的浮点数：inf/nan 未写全");
+                fail_at(begin_line, begin_col, "not a valid float: inf/nan incomplete");
             }
             s.bump();
         }
@@ -780,7 +780,7 @@ inline cpptoml::value scan_number(scanner& s) {
         const char p = s.peek_at(1);
         if (p == 'x' || p == 'o' || p == 'b') {
             if (has_sign) {
-                fail_at(begin_line, begin_col, "进制整数（0x/0o/0b）不允许正负号");
+                fail_at(begin_line, begin_col, "radix integers (0x/0o/0b) do not allow a sign");
             }
             const int base = (p == 'x') ? 16 : (p == 'o') ? 8 : 2;
             s.bump_n(2);
@@ -790,30 +790,30 @@ inline cpptoml::value scan_number(scanner& s) {
                 if (!s.eof() && charset::is_radix_digit(s.peek(), base)) {
                     const unsigned d = charset::radix_value(s.peek(), base);
                     if (acc > (UINT64_MAX - d) / static_cast<unsigned>(base)) {
-                        fail_at(begin_line, begin_col, "整数超出 64 位表示范围");
+                        fail_at(begin_line, begin_col, "integer exceeds the 64-bit representable range");
                     }
                     acc = acc * static_cast<unsigned>(base) + d;
                     s.bump();
                     any = true;
                 } else if (!s.eof() && s.peek() == '_') {
-                    if (!any) fail_at(begin_line, begin_col, "下划线必须紧邻数字两侧");
+                    if (!any) fail_at(begin_line, begin_col, "an underscore must sit between digits on both sides");
                     s.bump();
                     if (s.eof() || !charset::is_radix_digit(s.peek(), base)) {
-                        fail_at(begin_line, begin_col, "下划线必须紧邻数字两侧");
+                        fail_at(begin_line, begin_col, "an underscore must sit between digits on both sides");
                     }
                 } else {
                     break;
                 }
             }
-            if (!any) fail_at(begin_line, begin_col, "不是合法的整数：前缀后没有数字");
+            if (!any) fail_at(begin_line, begin_col, "not a valid integer: no digits after the prefix");
             return static_cast<std::int64_t>(acc);
         }
     }
 
     // decimal: optional sign + integer part
     if (s.eof() || !dec_ok(s.peek())) {
-        fail_at(begin_line, begin_col, negative ? "不是合法的数字：符号后没有数字"
-                                                : "不是合法的数字");
+        fail_at(begin_line, begin_col, negative ? "not a valid number: no digits after the sign"
+                                                : "not a valid number");
     }
     std::string digits;
     {
@@ -821,7 +821,7 @@ inline cpptoml::value scan_number(scanner& s) {
         s.bump();
         if (first == '0') {
             if (!s.eof() && (dec_ok(s.peek()) || s.peek() == '_')) {
-                fail_at(begin_line, begin_col, "前导零（十进制整数不能以 0 连数字开头）");
+                fail_at(begin_line, begin_col, "leading zero (a decimal integer cannot start with 0 followed by digits)");
             }
             digits.push_back('0');
         } else {
@@ -842,7 +842,7 @@ inline cpptoml::value scan_number(scanner& s) {
     if (!s.eof() && s.peek() == '.') {
         is_float = true;
         s.bump();
-        if (s.eof() || !dec_ok(s.peek())) not_float(s, "小数点后必须有数字");
+        if (s.eof() || !dec_ok(s.peek())) not_float(s, "a digit is required after the decimal point");
         digits.push_back('.');
         while (!s.eof()) {
             const char c = s.peek();
@@ -859,7 +859,7 @@ inline cpptoml::value scan_number(scanner& s) {
             digits.push_back(s.peek());
             s.bump();
         }
-        if (s.eof() || !dec_ok(s.peek())) not_float(s, "指数后必须有数字");
+        if (s.eof() || !dec_ok(s.peek())) not_float(s, "a digit is required after the exponent");
         while (!s.eof()) {
             const char c = s.peek();
             if (dec_ok(c)) { digits.push_back(c); s.bump(); }
@@ -875,18 +875,18 @@ inline cpptoml::value scan_number(scanner& s) {
         for (const char c : digits) {
             const unsigned d = static_cast<unsigned>(c - '0');
             if (mag > (UINT64_MAX - d) / 10) {
-                fail_at(begin_line, begin_col, "整数超出 64 位表示范围");
+                fail_at(begin_line, begin_col, "integer exceeds the 64-bit representable range");
             }
             mag = mag * 10 + d;
         }
         constexpr std::uint64_t kInt64Max = 9223372036854775807ULL;
         constexpr std::uint64_t kInt64Min = 9223372036854775808ULL;
         if (negative) {
-            if (mag > kInt64Min) fail_at(begin_line, begin_col, "整数超出 64 位表示范围");
+            if (mag > kInt64Min) fail_at(begin_line, begin_col, "integer exceeds the 64-bit representable range");
             if (mag == kInt64Min) return std::numeric_limits<std::int64_t>::min();
             return -static_cast<std::int64_t>(mag);
         }
-        if (mag > kInt64Max) fail_at(begin_line, begin_col, "整数超出 64 位表示范围");
+        if (mag > kInt64Max) fail_at(begin_line, begin_col, "integer exceeds the 64-bit representable range");
         return static_cast<std::int64_t>(mag);
     }
     if (negative) digits.insert(digits.begin(), '-');
@@ -895,10 +895,10 @@ inline cpptoml::value scan_number(scanner& s) {
     char* end = nullptr;
     const double v = std::strtod(digits.c_str(), &end);
     if (end != digits.c_str() + digits.size()) {
-        not_float(s, "数字形状异常");
+        not_float(s, "malformed number shape");
     }
     if (errno == ERANGE) {
-        if (std::isinf(v)) fail_at(begin_line, begin_col, "浮点数超出范围（超过 64 位浮点表示）");
+        if (std::isinf(v)) fail_at(begin_line, begin_col, "float out of range (exceeds the 64-bit floating-point range)");
         // underflow to 0 is fine (TOML only demands lossless
         // representability; tiny values may degrade to 0)
         return 0.0;

@@ -10,6 +10,9 @@ are flagged explicitly in each entry.
 
 ### Changed
 
+- All CLI and parse diagnostics translated to English: `parse_error`
+  messages (including the RFC 3339 reasons), the `format_tree` banner,
+  `tomlcli` output and the built-in selftest report.
 - Re-licensed under Apache-2.0 (was MIT); `LICENSE` updated.
 - Docs: cross-language navigation links at the top of `README.md` and
   `README-zh.md`; English README synced with the Chinese edits (intro

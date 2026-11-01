@@ -18,12 +18,12 @@ constexpr const std::string_view kVersion = "tomlcli 0.2.1";
 
 int usage() {
     std::cout
-        << "tomlcli —— TOML 值检查工具\n"
-        << "用法:\n"
-        << "  tomlcli <file.toml>        解析并打印值树\n"
-        << "  tomlcli check <file.toml>  只校验（出错给出 行:列）\n"
-        << "  tomlcli version            打印版本\n"
-        << "  tomlcli selftest           运行内置测试\n";
+        << "tomlcli —— TOML Parser Written in C++ 23\n"
+        << "Usage:\n"
+        << "  tomlcli <file.toml>        Parse and print the value tree\n"
+        << "  tomlcli check <file.toml>  Only validate (report errors with line:column)\n"
+        << "  tomlcli version            Print version\n"
+        << "  tomlcli selftest           Run built-in tests\n";
     return 2;
 }
 
@@ -38,17 +38,17 @@ std::optional<std::string> read_file(const std::string& path) {
 int report(const std::string& path, bool quiet) {
     const auto text = read_file(path);
     if (!text) {
-        std::cerr << "读不到文件: " << path << '\n';
+        std::cerr << "Cannot read file: " << path << '\n';
         return 1;
     }
     const auto parsed = cpptoml::parse(*text);
     if (!parsed) {
         std::cout << path << ':' << parsed.error().line << ':' << parsed.error().column
-                  << ": 错误: " << parsed.error().message << '\n';
+                  << ": Error: " << parsed.error().message << '\n';
         return 1;
     }
     if (quiet) {
-        std::cout << path << ": OK（顶层 " << parsed->entries.size() << " 个键）\n";
+        std::cout << path << ": OK (top-level " << parsed->entries.size() << " keys)\n";
     } else {
         std::cout << cpptoml::format_tree(*parsed) << '\n';
     }

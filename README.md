@@ -90,7 +90,7 @@ Notes:
 - **Datetimes are raw tokens** (`datetime::raw` prints exactly what you
   wrote). The project does not do timezone math or calendar formatting; see
   the position paper below for why.
-- **Diagnostics today are Chinese**: `message` strings and `format_tree`'s
+- **Diagnostics are English**: `message` strings and `format_tree`'s
   banner. The structured `line`/`column` is the contract clients should
   program against.
 

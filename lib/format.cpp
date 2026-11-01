@@ -31,7 +31,7 @@ void append_table(std::string& out, const table& t, std::size_t depth) {
 }  // namespace
 
 std::string format_tree(const table& t) {
-    std::string out = std::format("<table> 顶层 {} 个键\n", t.entries.size());
+    std::string out = std::format("<table> top-level {} keys\n", t.entries.size());
     append_table(out, t, 1);
     return out;
 }
