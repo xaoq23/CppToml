@@ -175,4 +175,4 @@ tools/amalgamate.py
 
 ## 许可
 
-[MIT](LICENSE) © CppToml contributors
+[Apache-2.0](LICENSE) © CppToml contributors
