@@ -1,13 +1,15 @@
 # CppToml (`cpptoml`)
 
-A small, standards-honest TOML 1.0 parser for **C++23**. No third-party
-dependencies, no exceptions, no custom allocators to configure — parse a
-document, get a tree, get an error with a line and a column.
+English | [简体中文](README-zh.md)
 
-- Full TOML 1.0 accepted surface: tables, array of tables, dotted keys,
+A small, lightweight TOML parser for **C++23**. No third-party
+dependencies, no exceptions, no custom allocators to configure — parse a
+document, get a value tree; on error, get the column and the reason.
+
+- Full TOML accepted surface: tables, array of tables, dotted keys,
   inline tables and arrays, and all seven value types
 - 717/717 on the official [toml-test](https://github.com/toml-lang/toml-test)
-  TOML 1.0 corpus (509 invalid rejected, 208 valid accepted)
+  TOML corpus (509 invalid rejected, 208 valid accepted)
 - Exception-free: `std::expected<table, parse_error>`
 - ~1.3k lines of library code; public API is three headers
 
@@ -94,9 +96,7 @@ Notes:
 
 ## Building
 
-Three doors, in increasing order of ceremony — all produce the same library.
-
-### cizon2 (first-class)
+### [cizon2 (see the repo)](https://github.com/xaoq23/Cizon2.git)
 
 ```console
 $ cizon2 build && build\debug-g++\tomlcli.exe selftest
@@ -173,14 +173,6 @@ under the same corpus and compiler:
 Reach for CppToml when you want a minimal, dependency-free parser with a
 modern-C++ error channel, and you do not need comments, serialization, or
 datetime arithmetic.
-
-## Not goals
-
-- Header-only distribution (amalgamation covers you instead)
-- Comment preservation, serialization, JSON/YAML emitters
-- Datetime arithmetic (values keep the raw token)
-- Compilers without C++23 (`std::expected` is part of the public contract)
-- Multi-config build systems other than the three doors above
 
 ## License
 

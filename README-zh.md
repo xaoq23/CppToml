@@ -1,10 +1,12 @@
 # CppToml (`cpptoml`)
 
-面向 **C++23** 的小而规矩的 TOML 1.0 解析器。零第三方依赖、不抛异常、
-没有要配置的分配器——解析文档，得到值树；出错就给你行、列与原因。
+[English](README.md) | 简体中文
 
-- TOML 1.0 接受面齐全：表、数组表、点号键、行内表/数组、七种值类型
-- 官方 [toml-test](https://github.com/toml-lang/toml-test) TOML 1.0 语料
+面向 **C++23** 的小而轻的 TOML 解析器。零第三方依赖、不抛异常、
+没有要配置的分配器——解析文档，得到值树表示;遇到错误时返回列与原因。
+
+- TOML 接受面齐全：表、数组表、点号键、行内表/数组、七种值类型
+- 官方 [toml-test](https://github.com/toml-lang/toml-test) TOML 语料
   **717/717**（509 条 invalid 全拒绝，208 条 valid 全接受）
 - 免异常通道：`std::expected<table, parse_error>`
 - 库代码约 1.3k 行；公共 API 只有三个头
@@ -89,9 +91,8 @@ std::cout << cpptoml::format_tree(root) << '\n';
 
 ## 构建
 
-三道门，仪式感递增——产出同一个库。
 
-### cizon2（一等公民）
+### [cizon2(详见仓库)](https://github.com/xaoq23/Cizon2.git)
 
 ```console
 $ cizon2 build && build\debug-g++\tomlcli.exe selftest
@@ -165,13 +166,6 @@ tools/amalgamate.py
 想要最小内核、零依赖、现代 C++ 错误通道，且不需要注释/序列化/时间运算
 时，选 CppToml。
 
-## 非目标
-
-- header-only 分发形态（用合并分发替代）
-- 注释保留、序列化、JSON/YAML 发射器
-- datetime 算术（值保留原始词法）
-- 不支持 C++23 的编译器（`std::expected` 是公共契约的一部分）
-- 上述三道门以外的多形态构建系统
 
 ## 许可
 
