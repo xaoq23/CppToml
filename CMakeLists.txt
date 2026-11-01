@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(cpptoml VERSION 0.2.0 LANGUAGES CXX)
+project(cpptoml VERSION 0.2.1 LANGUAGES CXX)
 
 # Core library: parser + value model + diagnostic formatter. Zero third-party
 # dependencies; C++23 only (std::expected is load-bearing, not optional).

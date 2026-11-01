@@ -6,7 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project does not use semantic versioning yet; breaking API changes
 are flagged explicitly in each entry.
 
-## [0.2.0] - Unreleased
+## [0.2.1] - 2026-11-01
+
+### Changed
+
+- Re-licensed under Apache-2.0 (was MIT); `LICENSE` updated.
+- Docs: cross-language navigation links at the top of `README.md` and
+  `README-zh.md`; English README synced with the Chinese edits (intro
+  wording, dropped "1.0" qualification in feature bullets, linked the
+  cizon2 build heading to its repo, removed the "Not goals" section).
+
+## [0.2.0] - 2026-11-01
 
 ### Added
 

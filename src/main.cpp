@@ -14,7 +14,7 @@
 
 namespace {
 
-constexpr const std::string_view kVersion = "tomlcli 0.2.0";
+constexpr const std::string_view kVersion = "tomlcli 0.2.1";
 
 int usage() {
     std::cout
