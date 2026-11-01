@@ -110,24 +110,6 @@ $ ctest --test-dir build
 `CPPTOML_BUILD_SELFTEST`（接入 CTest）。顶层构建默认全开，经
 `add_subdirectory` 嵌入时默认关闭。
 
-### 合并分发（`dist/`）
-
-只想拷两个文件的场景：
-
-```console
-$ python tools/amalgamate.py    # 重新生成 dist/，结果确定性一致
-```
-
-- `dist/cpptoml.hpp` —— 公共头 + 私有 `detail/` 全部内联进一个头
-- `dist/cpptoml.cpp` —— 全部翻译单元合一，`#include "cpptoml.hpp"` 一次，
-  无需任何构建系统
-- `dist/cpptoml/{value,parse,format}.hpp` —— shim，使 `-Idist` 下
-  `<cpptoml/parse.hpp>` 式包含照常编译
-
-```console
-$ g++ -std=c++23 -Idist -o app app.cpp dist/cpptoml.cpp
-```
-
 ## 项目布局
 
 ```text
@@ -139,7 +121,6 @@ lib/detail/        私有头（scanner、数字、字符集、UTF-8、RFC 3339�
 src/main.cpp       tomlcli
 src/selftest.cpp   内置测试（78 例：语料 + 错误关键词 + API 级）
 examples/          quick_config.cpp、print_tree.cpp
-tools/amalgamate.py
 ```
 
 ## 验证

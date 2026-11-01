@@ -114,25 +114,6 @@ Options: `CPPTOML_BUILD_CLI` (tomlcli), `CPPTOML_BUILD_EXAMPLES`,
 `CPPTOML_BUILD_SELFTEST` (CTest wire-up). All default ON for top-level
 builds and OFF when embedded via `add_subdirectory`.
 
-### Amalgamated (`dist/`)
-
-For projects that just want to drop two files in:
-
-```console
-$ python tools/amalgamate.py    # regenerates dist/ deterministically
-```
-
-- `dist/cpptoml.hpp` — all public headers plus the private `detail/` modules
-  inlined into one header
-- `dist/cpptoml.cpp` — all translation units merged; includes `cpptoml.hpp`
-  once; no build system needed
-- `dist/cpptoml/{value,parse,format}.hpp` — shims so `-Idist` keeps
-  `<cpptoml/parse.hpp>`-style includes compiling
-
-```console
-$ g++ -std=c++23 -Idist -o app app.cpp dist/cpptoml.cpp
-```
-
 ## Project layout
 
 ```text
@@ -144,7 +125,6 @@ lib/detail/        private headers (scanner, numbers, charsets, UTF-8, RFC 3339)
 src/main.cpp       tomlcli
 src/selftest.cpp   built-in test suite (78 cases: valid corpus + error keywords + API)
 examples/          quick_config.cpp, print_tree.cpp
-tools/amalgamate.py
 ```
 
 ## Verification

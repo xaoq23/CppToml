@@ -19,6 +19,12 @@ are flagged explicitly in each entry.
   wording, dropped "1.0" qualification in feature bullets, linked the
   cizon2 build heading to its repo, removed the "Not goals" section).
 
+### Removed
+
+- The amalgamated distribution `dist/` and its generator
+  `tools/amalgamate.py`; the library ships as plain sources
+  (`include/` + `lib/`) built through CMake or cizon2.
+
 ## [0.2.0] - 2026-11-01
 
 ### Added
