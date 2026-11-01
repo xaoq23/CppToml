@@ -86,8 +86,6 @@ std::cout << cpptoml::format_tree(root) << '\n';
   `std::shared_ptr<table>`、`std::shared_ptr<array>`。
 - **日期时间保存原始词法**（`datetime::raw` 与输入逐字节一致）。本项目
   不做时区运算与日历格式化，理由见下方定位。
-- **诊断文案现为英文**：`message` 字符串与 `format_tree` 的标题行都是。
-  客户端应当针对结构化的 `line`/`column` 编程。
 
 ## 构建
 
