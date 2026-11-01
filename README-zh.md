@@ -92,7 +92,7 @@ std::cout << cpptoml::format_tree(root) << '\n';
 ## 构建
 
 
-### [cizon2(详见仓库)](https://github.com/xaoq23/Cizon2.git)
+### [cizon2(详见仓库)](https://github.com/xaoq23/Cizon2)
 
 ```console
 $ cizon2 build && build\debug-g++\tomlcli.exe selftest

@@ -96,7 +96,7 @@ Notes:
 
 ## Building
 
-### [cizon2 (see the repo)](https://github.com/xaoq23/Cizon2.git)
+### [cizon2 (see the repo)](https://github.com/xaoq23/Cizon2)
 
 ```console
 $ cizon2 build && build\debug-g++\tomlcli.exe selftest
