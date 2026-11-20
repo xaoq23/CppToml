@@ -1,4 +1,4 @@
-// lib/detail/utf8.hpp — whole-input UTF-8 and control-byte pre-scan.
+// src/detail/utf8.hpp — whole-input UTF-8 and control-byte pre-scan.
 //
 // One linear pass over the whole input before any parsing starts:
 //   * strict UTF-8: rejects overlong encodings, surrogates, out-of-range

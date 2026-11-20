@@ -1,4 +1,4 @@
-// lib/format.cpp — indented tree rendering for tables (read-only display;
+// src/format.cpp — indented tree rendering for tables (read-only display;
 // not a TOML serializer).
 
 #include <cpptoml/format.hpp>

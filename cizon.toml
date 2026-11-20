@@ -10,10 +10,10 @@ flags = ["-Wall", "-Wextra"]
 [[target]]
 name = "tomlcore"
 kind = "static_lib"
-sources = ["lib"]
+sources = ["src"]
 
 [[target]]
 name = "tomlcli"
 kind = "bin"
-sources = ["src"]
+sources = ["cli"]
 links = ["tomlcore"]

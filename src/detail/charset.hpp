@@ -1,4 +1,4 @@
-// lib/detail/charset.hpp — explicit ASCII character class tables.
+// src/detail/charset.hpp — explicit ASCII character class tables.
 //
 // Private header: classification uses ASCII code ranges only
 // (locale-sensitive std::isalnum can misread lead bytes of multi-byte

@@ -17,7 +17,7 @@
 $ git clone <本仓库>
 $ cd cpptoml
 $ g++ -std=c++23 -Iinclude -o quick_config examples/quick_config.cpp \
-      lib/parser.cpp lib/value.cpp lib/format.cpp
+      src/parser.cpp src/value.cpp src/format.cpp
 $ ./quick_config
 ```
 
@@ -112,12 +112,12 @@ $ ctest --test-dir build
 
 ```text
 include/cpptoml/   公共 API（value、parse、format）
-lib/parser.cpp     递归下降解析器，单趟、无回溯
-lib/value.cpp      值的诊断文本表示
-lib/format.cpp     表树渲染
-lib/detail/        私有头（scanner、数字、字符集、UTF-8、RFC 3339）
-src/main.cpp       tomlcli
-src/selftest.cpp   内置测试（78 例：语料 + 错误关键词 + API 级）
+src/parser.cpp     递归下降解析器，单趟、无回溯
+src/value.cpp      值的诊断文本表示
+src/format.cpp     表树渲染
+src/detail/        私有头（scanner、数字、字符集、UTF-8、RFC 3339）
+cli/main.cpp       tomlcli
+cli/selftest.cpp   内置测试（78 例：语料 + 错误关键词 + API 级）
 examples/          quick_config.cpp、print_tree.cpp
 ```
 

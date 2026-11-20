@@ -1,4 +1,4 @@
-// lib/value.cpp — single-value repr.
+// src/value.cpp — single-value repr.
 //
 // Used by format_tree and the CLI: deterministic, readable, unambiguous
 // (strings escaped, keys sorted).

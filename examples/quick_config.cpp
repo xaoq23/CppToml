@@ -5,7 +5,7 @@
 // error contract for ill-formed input.
 //
 // Build (standalone): g++ -std=c++23 -Iinclude -o quick_config
-//     examples/quick_config.cpp lib/parser.cpp lib/value.cpp lib/format.cpp
+//     examples/quick_config.cpp src/parser.cpp src/value.cpp src/format.cpp
 
 #include <cpptoml/format.hpp>
 #include <cpptoml/parse.hpp>

@@ -1,4 +1,4 @@
-// lib/detail/scanner.hpp — lexical cursor: line/column tracking and
+// src/detail/scanner.hpp — lexical cursor: line/column tracking and
 // single-character helpers.
 //
 // Private header: shared by parser.cpp and the other detail headers, never

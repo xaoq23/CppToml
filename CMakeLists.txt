@@ -5,9 +5,9 @@ project(cpptoml VERSION 0.2.1 LANGUAGES CXX)
 # dependencies; C++23 only (std::expected is load-bearing, not optional).
 add_library(cpptoml STATIC)
 target_sources(cpptoml PRIVATE
-    lib/parser.cpp
-    lib/value.cpp
-    lib/format.cpp)
+    src/parser.cpp
+    src/value.cpp
+    src/format.cpp)
 target_compile_features(cpptoml PUBLIC cxx_std_23)
 target_include_directories(cpptoml PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -31,8 +31,8 @@ cmake_dependent_option(CPPTOML_BUILD_SELFTEST
 
 if(CPPTOML_BUILD_CLI)
     add_executable(tomlcli
-        src/main.cpp
-        src/selftest.cpp)
+        cli/main.cpp
+        cli/selftest.cpp)
     target_link_libraries(tomlcli PRIVATE cpptoml)
     target_compile_features(tomlcli PRIVATE cxx_std_23)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

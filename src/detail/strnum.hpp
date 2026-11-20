@@ -1,4 +1,4 @@
-// lib/detail/strnum.hpp — leaf token scanning: string / integer / float /
+// src/detail/strnum.hpp — leaf token scanning: string / integer / float /
 // bool / datetime.
 //
 // Private header: included by parser.cpp only. Arrays and inline tables are

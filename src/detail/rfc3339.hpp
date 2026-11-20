@@ -1,4 +1,4 @@
-// lib/detail/rfc3339.hpp — syntax and range scan of TOML 1.0 datetime
+// src/detail/rfc3339.hpp — syntax and range scan of TOML 1.0 datetime
 // tokens.
 //
 // One cursor pass plus a concrete failure reason; throws nothing and builds

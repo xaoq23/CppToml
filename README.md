@@ -19,7 +19,7 @@ document, get a value tree; on error, get the column and the reason.
 $ git clone <this repo>
 $ cd cpptoml
 $ g++ -std=c++23 -Iinclude -o quick_config examples/quick_config.cpp \
-      lib/parser.cpp lib/value.cpp lib/format.cpp
+      src/parser.cpp src/value.cpp src/format.cpp
 $ ./quick_config
 ```
 
@@ -115,12 +115,12 @@ builds and OFF when embedded via `add_subdirectory`.
 
 ```text
 include/cpptoml/   public API (value, parse, format)
-lib/parser.cpp     recursive-descent parser, one pass, no backtracking
-lib/value.cpp      value repr for diagnostics
-lib/format.cpp     table tree renderer
-lib/detail/        private headers (scanner, numbers, charsets, UTF-8, RFC 3339)
-src/main.cpp       tomlcli
-src/selftest.cpp   built-in test suite (78 cases: valid corpus + error keywords + API)
+src/parser.cpp     recursive-descent parser, one pass, no backtracking
+src/value.cpp      value repr for diagnostics
+src/format.cpp     table tree renderer
+src/detail/        private headers (scanner, numbers, charsets, UTF-8, RFC 3339)
+cli/main.cpp       tomlcli
+cli/selftest.cpp   built-in test suite (78 cases: valid corpus + error keywords + API)
 examples/          quick_config.cpp, print_tree.cpp
 ```
 

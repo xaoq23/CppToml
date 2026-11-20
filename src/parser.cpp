@@ -1,4 +1,4 @@
-// lib/parser.cpp — TOML 1.0 recursive-descent parser.
+// src/parser.cpp — TOML 1.0 recursive-descent parser.
 //
 // Structure: parse() pre-scans for UTF-8 validity and control bytes, then
 // runs the document loop (comments / table headers / key-value pairs).
