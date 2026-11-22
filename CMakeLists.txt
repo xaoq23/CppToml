@@ -54,3 +54,13 @@ include(CTest)
 if(CPPTOML_BUILD_SELFTEST AND CPPTOML_BUILD_CLI)
     add_test(NAME cpptoml.selftest COMMAND tomlcli selftest)
 endif()
+
+# Install rules: let CMake consumers install the library and its public
+# headers. (cizon2's experimental CMake-dependency path only discovers
+# library targets that carry install rules, so without these the package
+# is invisible to it.)
+install(TARGETS cpptoml
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin)
+install(DIRECTORY include/ DESTINATION include)
